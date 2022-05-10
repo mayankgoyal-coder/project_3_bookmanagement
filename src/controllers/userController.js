@@ -31,7 +31,7 @@ const userCreate = async function (req, res) {
 
         if (!name) return res.status(400).send({ status: false, message: "Name is Required ..." })
         if (!isValid(name)) return res.status(400).send({ status: false, message: "Name Should be valid ..." })
-        if (!name.match(nameRegex)) return res.status(400).send({ status: false, message: "Name Should not contain Number " })
+        if (!name.match(nameRegex)) return res.status(400).send({ status: false, message: "Name Should not contain Number and length between 2-30 " })
 
         if (!phone) return res.status(400).send({ status: false, Message: "Phone Number is Required ..." })
         if (!phone.match(phoneRegex)) return res.status(400).send({ status: false, Message: `${phone} Please enter valid Phone....` })
@@ -48,10 +48,10 @@ const userCreate = async function (req, res) {
                 if (!isValid(street)) return res.status(400).send({ status: false, message: "Street Should be valid ... " })
             if (city)
                 if (!isValid(city)) return res.status(400).send({ status: false, message: "City Should be valid ... " })
-            if (!city.match(nameRegex)) return res.status(400).send({ status: false, message: "City name  Should not contain Number " })
+            if (!city.match(nameRegex)) return res.status(400).send({ status: false, message: "City Name Should not contain Number" })
             if (pincode) {
                 if (!isValid(pincode)) return res.status(400).send({ status: false, message: "Pincode Should be valid ... " })
-                if (!pincode.match(/^[0-9]+$/)) return res.status(400).send({ status: false, Message: `${pincode} --> Pincode Should Only Contain Numbers...` })
+                if (!pincode.match(/^[0-9]{5,6}$/)) return res.status(400).send({ status: false, Message: `${pincode} --> Pincode Should Only Contain Numbers...` })
             }
         }
 

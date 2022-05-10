@@ -1,4 +1,4 @@
-const mongoose=require("mongoose")
+const mongoose = require("mongoose")
 
 const userSchema = new mongoose.Schema({
     title:{type:String,required:true,enum:["Mr","Mrs","Miss"]},
@@ -14,5 +14,3 @@ const userSchema = new mongoose.Schema({
 },{timestamps:true})
 
 module.exports = mongoose.model("User",userSchema)
-
-
