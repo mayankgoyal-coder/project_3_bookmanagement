@@ -23,6 +23,7 @@ const createBook = async (req, res) => {
     try {
         const requestBody = req.body
         const { title, excerpt, userId, ISBN, category, subcategory, releasedAt } = requestBody
+        const ISBNRagex = /^[\d*\-]{10}|[\d*\-]{13}$/
 
         if (!title) return res.status(400).send({ status: false, message: "Title is Required ..." })
         if (!isValid(title)) return res.status(400).send({ status: false, message: "Title Should be Valid..." })
@@ -31,10 +32,12 @@ const createBook = async (req, res) => {
         if (!isValid(excerpt)) return res.status(400).send({ status: false, message: "Excerpt Should be Valid..." })
 
         if (!userId) return res.status(400).send({ status: false, message: "UserId is Required ..." })
-
+        if (!isValid(userId)) return res.status(400).send({ status: false, message: "UserId Should be Valid..." })
+        if (!isValidObjectId(userId)) return res.status(400).send({ status: false, message: "bookId is not valid ObjectId" })
 
         if (!ISBN) return res.status(400).send({ status: false, message: "ISBN is Required ..." })
         if (!isValid(ISBN)) return res.status(400).send({ status: false, message: "ISBN Should be Valid..." })
+        if (!ISBN.match(ISBNRagex)) return res.status(400).send({ status: false, message: "ISBN Should only contain Number and - and length of 10 and 13 only " })
 
         if (!category) return res.status(400).send({ status: false, message: "Category is Required ..." })
         if (!isValid(category)) return res.status(400).send({ status: false, message: "Category Should be Valid..." })
@@ -56,20 +59,22 @@ const getBookByQueryParams = async (req, res) => {
     try {
 
         const requestBody = req.query;
+        console.log(requestBody)
 
         if (!Object.keys(requestBody).length) return res.status(404).send({ status: false, msg: "query must be present" })
         // if (!requestBody.userId) return res.status(404).send({ status: false, msg: "bookId should be present" }) 
         // if (!requestBody.title) return res.status(404).send({ status: false, msg: "title should be present" })
         // if (!requestBody.excerpt) return res.status(404).send({ status: false, msg: "excerpt should be present" })
-        if (!requestBody.userId) return res.status(404).send({ status: false, msg: "userId should be present" })
-        if (!requestBody.category) return res.status(404).send({ status: false, msg: "category should be present" }) 
-        if (!requestBody.subcategory) return res.status(404).send({ status: false, msg: "subcategory should be present" }) 
-
+        // if (!requestBody.userId) return res.status(404).send({ status: false, msg: "userId should be present" })
+        // if (!requestBody.category) return res.status(404).send({ status: false, msg: "category should be present" }) 
+        // if (!requestBody.subcategory) return res.status(404).send({ status: false, msg: "subcategory should be present" }) 
 
         //---------------------------------------------------Query param------------------------------------------------------------//
-        if (!mongoose.isValidObjectId(requestBody.userId)) return res.status(400).send({ status: false, msg: "Enter a Valid userId" })
+        // if (!mongoose.isValidObjectId(requestBody.userId)) return res.status(400).send({ status: false, msg: "Enter a Valid userId" })
         let BookData = await bookModel.find(requestBody)
         if (!BookData) return res.status(400).send({ status: false, msg: "No such userId found" })
+        return res.status(201).send({ status: true, message: "Found successfully", data: BookData })
+        
 
         // if (!Array.isArray(requestBody.category)) return res.status(400).send({ status: false, msg: "category Should be an Array" })
 
@@ -81,7 +86,6 @@ const getBookByQueryParams = async (req, res) => {
         // let  title=["The Wheels of Chance","HARRY POTTER",""]
         // let bookNameSorted=title.sort()
         // console.log(bookNameSorted)
-
 
     } catch (err) {
         res.status(500).send({ status: false, Error: err.message })
@@ -113,7 +117,7 @@ const getBookById = async (req, res) => {
         //     updatedAt: getBook.updatedAt,
         //     reviewsData: []
         // }
-        
+
         return res.status(201).send({ status: true, message: "Success", data: data })
 
     } catch (err) {
