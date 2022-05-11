@@ -1,6 +1,10 @@
 const bookModel = require("../models/bookModel")
 const userModel = require("../models/userModel")
 const mongoose = require("mongoose")
+const moment = require("moment")
+const { request } = require("express")
+// console.log(moment().format("YYYY-MM-DD"))
+// console.log(new Date("1995-11-12") )  //.getTime())
 
 //######################################################################################################################
 const isValid = function (value) {
@@ -17,16 +21,26 @@ const isValidObjectId = function (Id) {
     return mongoose.isValidObjectId(Id)          //mongoose.Types.ObjectId.isValid(Id)
 }
 
+// const isValidDate = function (releasedAt){    ///^\d{4}-\d{2}-\d{2}$/
+//     if(releasedAt.match(/^(\d{4})(\/|-)(\d{1,2})(\/|-)(\d{1,2})$/)){
+//         let Date1 = new Date(releasedAt);
+//     }
+//     else return true
+// }
+
 //######################################################################################################################
 
 const createBook = async (req, res) => {
     try {
         const requestBody = req.body
-        const { title, excerpt, userId, ISBN, category, subcategory, releasedAt } = requestBody
+        let { title, excerpt, userId, ISBN, category, subcategory, releasedAt } = requestBody
         const ISBNRagex = /^[\d*\-]{10}|[\d*\-]{13}$/
+
+        if (!isValidRequestBody(requestBody)) return res.status(400).send({ status: false, message: "Invalid request parmeters,Please provide Book details" })
 
         if (!title) return res.status(400).send({ status: false, message: "Title is Required ..." })
         if (!isValid(title)) return res.status(400).send({ status: false, message: "Title Should be Valid..." })
+        if (await bookModel.findOne({ title })) return res.status(400).send({ status: false, message: "Title Already Used by Someone...Provide Unique Title" })
 
         if (!excerpt) return res.status(400).send({ status: false, message: "Excerpt is Required ..." })
         if (!isValid(excerpt)) return res.status(400).send({ status: false, message: "Excerpt Should be Valid..." })
@@ -38,59 +52,59 @@ const createBook = async (req, res) => {
         if (!ISBN) return res.status(400).send({ status: false, message: "ISBN is Required ..." })
         if (!isValid(ISBN)) return res.status(400).send({ status: false, message: "ISBN Should be Valid..." })
         if (!ISBN.match(ISBNRagex)) return res.status(400).send({ status: false, message: "ISBN Should only contain Number and - and length of 10 and 13 only " })
+        if (await bookModel.findOne({ ISBN })) return res.status(400).send({ status: false, message: "ISBN Already Used by Someone...Provide Unique ISBN" })
 
         if (!category) return res.status(400).send({ status: false, message: "Category is Required ..." })
         if (!isValid(category)) return res.status(400).send({ status: false, message: "Category Should be Valid..." })
 
         if (!subcategory) return res.status(400).send({ status: false, message: "Subcategory is Required ..." })
+        if (Array.isArray(subcategory)) subcategory = subcategory.map(el => el.trim()).filter(el => el)
+        if (Object.prototype.toString.call(subcategory) === "[object String]") subcategory = subcategory.trim()
 
         if (!releasedAt) return res.status(400).send({ status: false, message: "ReleasedAt is Required ..." })
+        // if (releasedAt )
 
-        if (!isValidRequestBody(requestBody)) return res.status(400).send({ status: false, message: "Invalid request parmeters,Please provide Book details" })
         const createdBook = await bookModel.create(requestBody)
         return res.status(201).send({ status: true, message: "created successfully", data: createdBook })
+
     } catch (err) {
         res.status(500).send({ status: false, Error: err.message })
     }
 }
 
-//==============================================getBookByQueryParams====================================================//
+//######################################################################################################################
 const getBookByQueryParams = async (req, res) => {
     try {
-
         const requestBody = req.query;
-        console.log(requestBody)
+        const filterQuery = { isDeleted: false }
+        if (isValidRequestBody(requestBody)) {
 
-        if (!Object.keys(requestBody).length) return res.status(404).send({ status: false, msg: "query must be present" })
-        // if (!requestBody.userId) return res.status(404).send({ status: false, msg: "bookId should be present" }) 
-        // if (!requestBody.title) return res.status(404).send({ status: false, msg: "title should be present" })
-        // if (!requestBody.excerpt) return res.status(404).send({ status: false, msg: "excerpt should be present" })
-        // if (!requestBody.userId) return res.status(404).send({ status: false, msg: "userId should be present" })
-        // if (!requestBody.category) return res.status(404).send({ status: false, msg: "category should be present" }) 
-        // if (!requestBody.subcategory) return res.status(404).send({ status: false, msg: "subcategory should be present" }) 
+            if (requestBody.userId) filterQuery.userId = requestBody.userId.trim()
+            if (requestBody.category) filterQuery.category = requestBody.category.trim()
+            if (requestBody.subcategory) {
+                filterQuery.subcategory = requestBody.subcategory.split(",").map(el => el.trim())
+            }
 
-        //---------------------------------------------------Query param------------------------------------------------------------//
-        // if (!mongoose.isValidObjectId(requestBody.userId)) return res.status(400).send({ status: false, msg: "Enter a Valid userId" })
-        let BookData = await bookModel.find(requestBody)
-        if (!BookData) return res.status(400).send({ status: false, msg: "No such userId found" })
-        return res.status(201).send({ status: true, message: "Found successfully", data: BookData })
+        }
+        let bookData = await bookModel.find(filterQuery)   //.select({ _id: 1, title: 1, excerpt: 1, userId: 1, category: 1, releasedAt: 1, reviews: 1 ,isDeleted:1 })
+        if (!bookData) return res.status(404).send({ status: false, msg: "No Book found" })
         
+        console.log(bookData)
 
-        // if (!Array.isArray(requestBody.category)) return res.status(400).send({ status: false, msg: "category Should be an Array" })
+        let arr =[]
+        for(let i=0;i<bookData.length;i++){
+           arr[i] =bookData.sort()
+        }
+        console.log(arr)
 
-        // if (!Array.isArray(requestBody.subcategory)) return res.status(400).send({ status: false, msg: "subcategory Should be an Array" })
-
-        //---------------------------------------------Sorted in alphabetical order------------------------------------------------------//
-
-        // // take input
-        // let  title=["The Wheels of Chance","HARRY POTTER",""]
-        // let bookNameSorted=title.sort()
-        // console.log(bookNameSorted)
+        return res.status(201).send({ status: true, message: "Found successfully", data: arr })
 
     } catch (err) {
         res.status(500).send({ status: false, Error: err.message })
     }
 }
+
+//######################################################################################################################
 
 const getBookById = async (req, res) => {
     try {
@@ -99,8 +113,8 @@ const getBookById = async (req, res) => {
         const getBook = await bookModel.findOne({ _id: bookId, isDeleted: false });
         if (!getBook) return res.status(404).send({ status: false, message: "No Book Found" });
         let data = JSON.parse(JSON.stringify(getBook))   // deep cloning
-        data.reviewsData=[]
-        console.log(data)
+        data.reviewsData = []
+        // console.log(data)
 
         // const bookDetails = {
         //     _id: getBook._id,
