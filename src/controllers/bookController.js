@@ -1,12 +1,11 @@
 const bookModel = require("../models/bookModel")
 const userModel = require("../models/userModel")
+const reviewModel = require("../models/reviewModel")
 const mongoose = require("mongoose")
 const moment = require("moment")
 const { request } = require("express")
-// console.log(moment().format("YYYY-MM-DD"))
-// console.log(new Date("1995-11-12") )  //.getTime())
 
-//######################################################################################################################
+//#######################################################################################################################################################################
 const isValid = function (value) {
     if (typeof value === "undefined" || typeof value === null) return false
     if (typeof value === "string" && value.trim().length === 0) return false
@@ -21,14 +20,26 @@ const isValidObjectId = function (Id) {
     return mongoose.isValidObjectId(Id)          //mongoose.Types.ObjectId.isValid(Id)
 }
 
-// const isValidDate = function (releasedAt){    ///^\d{4}-\d{2}-\d{2}$/
-//     if(releasedAt.match(/^(\d{4})(\/|-)(\d{1,2})(\/|-)(\d{1,2})$/)){
-//         let Date1 = new Date(releasedAt);
+const isValidDate = function (a) {
+    const regEx = /^(\d{4})(\/|-)(\d{1,2})(\/|-)(\d{1,2})$/;                     ///^\d{4}-\d{2}-\d{2}$/;       //yyyy-mm-dd    //yyyy-m-d
+    if (!a.match(regEx)) return false;
+    let date = new Date(a)
+    if (date != "Invalid Date") return date.toISOString().slice(0, 10)       //    2022-05-10T08:55:46.266+00:00
+    else return false
+}
+
+// const isValidDate = (date) => {    //2022-03-30
+//     let  d = new Date(date);
+//     console.log(date.slice(8,10))
+//     console.log(date.slice(5,7) )
+//     console.log(date.slice(0,4))
+//     if (d.getFullYear() == date.slice(0,4) && d.getMonth() == date.slice(5,7) && d.getDate() == date.slice(8,10)) {
+//         return true;
 //     }
-//     else return true
+//     return false;
 // }
 
-//######################################################################################################################
+//#######################################################################################################################################################################
 
 const createBook = async (req, res) => {
     try {
@@ -37,11 +48,11 @@ const createBook = async (req, res) => {
         const ISBNRagex = /^[\d*\-]{10}|[\d*\-]{13}$/
 
         if (!isValidRequestBody(requestBody)) return res.status(400).send({ status: false, message: "Invalid request parmeters,Please provide Book details" })
- 
+
         if (!userId) return res.status(400).send({ status: false, message: "UserId is Required ..." })
         if (!isValid(userId)) return res.status(400).send({ status: false, message: "UserId Should be Valid..." })
-        if (!isValidObjectId(userId)) return res.status(400).send({ status: false, message: "bookId is not valid ObjectId" })
-        if(!(await userModel.findOne({ _id:userId }))) return res.status(400).send({ status: false, message: "User not Registered yet" })
+        if (!isValidObjectId(userId)) return res.status(400).send({ status: false, message: "UserId is not valid ObjectId" })
+        if (!(await userModel.findOne({ _id: userId }))) return res.status(400).send({ status: false, message: "User not Registered yet" })
 
         if (!title) return res.status(400).send({ status: false, message: "Title is Required ..." })
         if (!isValid(title)) return res.status(400).send({ status: false, message: "Title Should be Valid..." })
@@ -63,7 +74,7 @@ const createBook = async (req, res) => {
         if (Object.prototype.toString.call(subcategory) === "[object String]") subcategory = subcategory.trim()
 
         if (!releasedAt) return res.status(400).send({ status: false, message: "ReleasedAt is Required ..." })
-        // if (releasedAt )
+        if (!isValidDate(releasedAt)) return res.status(400).send({ status: false, message: "ReleasedAt Date Format should be YYYY-MM-DD " })
 
         const createdBook = await bookModel.create(requestBody)
         return res.status(201).send({ status: true, message: "created successfully", data: createdBook })
@@ -73,15 +84,19 @@ const createBook = async (req, res) => {
     }
 }
 
-//######################################################################################################################
+//#######################################################################################################################################################################
 const getBookByQueryParams = async (req, res) => {
     try {
-        const requestBody = req.query;
+        const requestBody = req.query;        // {userId,category,subcategory}   {u},{u,c},{u,c,s}
         const filterQuery = { isDeleted: false }
 
         if (isValidRequestBody(requestBody)) {
-            if (requestBody.userId) filterQuery.userId = requestBody.userId.trim()
-            if (requestBody.category) filterQuery.category = requestBody.category.trim()
+            if (requestBody.userId) {
+                filterQuery.userId = requestBody.userId.trim()
+            }
+            if (requestBody.category) {
+                filterQuery.category = requestBody.category.trim()
+            }
             if (requestBody.subcategory) {
                 filterQuery.subcategory = requestBody.subcategory.split(",").map(el => el.trim())
             }
@@ -97,7 +112,7 @@ const getBookByQueryParams = async (req, res) => {
     }
 }
 
-//######################################################################################################################
+//#######################################################################################################################################################################
 
 const getBookById = async (req, res) => {
     try {
@@ -106,7 +121,10 @@ const getBookById = async (req, res) => {
         const getBook = await bookModel.findOne({ _id: bookId, isDeleted: false });
         if (!getBook) return res.status(404).send({ status: false, message: "No Book Found" });
         let bookDetails = JSON.parse(JSON.stringify(getBook))   // deep cloning
-        bookDetails.reviewsData = []
+
+        const reviewdata = await reviewModel.find({ bookId: bookId, isDeleted: false }).select({ isDeleted: 0, createdAt: 0, updatedAt: 0, __v: 0 })
+
+        bookDetails.reviewsData = reviewdata
         // console.log(data)
 
         // const bookDetails = {
@@ -132,7 +150,7 @@ const getBookById = async (req, res) => {
     }
 }
 
-//######################################################################################################################
+//#######################################################################################################################################################################
 
 const updateBookById = async (req, res) => {
     try {
@@ -141,29 +159,30 @@ const updateBookById = async (req, res) => {
         const { title, excerpt, ISBN, releasedAt } = requestUpdateBody
         const ISBNRagex = /^[\d*\-]{10}|[\d*\-]{13}$/
 
+        //  check for other things that comes from requestbody
 
         if (!isValidObjectId(bookId)) return res.status(400).send({ status: false, message: "bookId is not valid" })
         if (!isValidRequestBody(requestUpdateBody)) return res.status(400).send({ status: false, message: "Please Provide something to Update" })
 
-        if (title) {
+        if (title != undefined) {
             if (!isValid(title)) return res.status(400).send({ status: false, message: "Title Should be Valid..." })
             if (await bookModel.findOne({ title })) return res.status(400).send({ status: false, message: "Title Already Used by Someone.. or You Already Updated it With Provided Title" })
         }
-        if (excerpt) {
+        if (excerpt != undefined) {
             if (!isValid(excerpt)) return res.status(400).send({ status: false, message: "Excerpt Should be Valid..." })
         }
-        if (ISBN) {
+        if (ISBN != undefined) {
             if (!isValid(ISBN)) return res.status(400).send({ status: false, message: "ISBN Should be Valid..." })
             if (!ISBN.match(ISBNRagex)) return res.status(400).send({ status: false, message: "ISBN Should only contain Number and - and length of 10 and 13 only " })
-            if (await bookModel.findOne({ ISBN })) return res.status(400).send({ status: false, message: "ISBN Already Used by Someone... or You Already Updated it With Provided ISBN" })
+            if (await bookModel.findOne({ ISBN })) return res.status(400).send({ status: false, message: "ISBN Already Used by SomeBody... or You Already Updated it With Provided ISBN" })
         }
-
-        //releasedAt should be valided here 
-
-        const bookToBeUpdated = await bookModel.findById({ _id: bookId, isdeleted: false })
+        if (releasedAt != undefined) {
+            if (!isValidDate(releasedAt)) return res.status(400).send({ status: false, message: "ReleasedAt Date Format should be like YYYY-MM-DD " })
+        }
+        const bookToBeUpdated = await bookModel.findOne({ _id: bookId, isdeleted: false })
         if (!bookToBeUpdated) return res.status(404).send({ status: false, massage: "This book does not exist or Maybe Deleted" })
 
-        const updatedBooks = await bookModel.findOneAndUpdate({ _id: bookId }, { title: title, excerpt: excerpt, ISBN: ISBN, releasedAt: releasedAt }, { new: true })  //releaseAt
+        const updatedBooks = await bookModel.findOneAndUpdate({ _id: bookId }, { title: title, excerpt: excerpt, ISBN: ISBN, releasedAt: releasedAt }, { new: true })
         res.status(200).send({ status: true, message: "update successfully", data: updatedBooks })
 
     } catch (err) {
@@ -172,7 +191,7 @@ const updateBookById = async (req, res) => {
     }
 }
 
-//######################################################################################################################
+//#######################################################################################################################################################################
 
 const deleteById = async (req, res) => {
     try {
@@ -190,7 +209,7 @@ const deleteById = async (req, res) => {
     }
 }
 
-//######################################################################################################################
+//#######################################################################################################################################################################
 
 
 module.exports = { createBook, getBookByQueryParams, getBookById, updateBookById, deleteById }
