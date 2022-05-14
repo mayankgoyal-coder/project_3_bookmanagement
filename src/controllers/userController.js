@@ -76,7 +76,7 @@ const userLogin = async function (req, res) {
         // console.log(userLogin)
         if (!userLogin) return res.status(400).send({ status: false, message: "Invalid Login Credentials" })
 
-        const token = await jwt.sign({ userId: userLogin._id }, "Project3/BookManagement(@#@42)", { expiresIn: "60s" })
+        const token = await jwt.sign({ userId: userLogin._id }, "Project3/BookManagement(@#@42)", { expiresIn: "1h" })
         return res.status(200).send({ status: true, message: "Login Successfully", data: token })
     }
     catch (err) {

@@ -36,3 +36,5 @@
 // console.log(validate(a))
 
 console.log(new Date("2020-02-30"))
+
+console.log(Math.abs("vhfhg"))
