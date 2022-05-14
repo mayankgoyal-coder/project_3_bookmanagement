@@ -3,13 +3,14 @@ const router = express.Router();
 const { userCreate, userLogin } = require("../controllers/userController")
 const { createBook, getBookByQueryParams, getBookById, updateBookById, deleteById } = require("../controllers/bookController")
 const { createReview ,updateReview ,deleteReview} = require("../controllers/reviewController")
+const middleware = require("../middlewares/auth")
 
 //----------User-------------------//
 router.post("/register", userCreate)
 router.post("/login", userLogin)
 
 //----------Book-------------------//
-router.post("/books", createBook)
+router.post("/books",createBook)
 router.get("/books", getBookByQueryParams)
 router.get("/books/:bookId", getBookById)
 router.put("/books/:bookId", updateBookById)

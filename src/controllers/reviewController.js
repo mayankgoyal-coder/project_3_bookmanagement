@@ -67,7 +67,6 @@ const createReview = async function (req, res) {
 
 
 const updateReview = async function (req, res) {
-    //mayank
     try {
         const bookId = req.params.bookId
         const reviewId = req.params.reviewId

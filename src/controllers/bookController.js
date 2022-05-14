@@ -21,23 +21,14 @@ const isValidObjectId = function (Id) {
 }
 
 const isValidDate = function (a) {
-    const regEx = /^(\d{4})(\/|-)(\d{1,2})(\/|-)(\d{1,2})$/;                     ///^\d{4}-\d{2}-\d{2}$/;       //yyyy-mm-dd    //yyyy-m-d
-    if (!a.match(regEx)) return false;
+    const regEx = /^(\d{4})(\/|-)(\d{1,2})(\/|-)(\d{1,2})$/;                    
+      if (!a.match(regEx)) return false;
     let date = new Date(a)
-    if (date != "Invalid Date") return date.toISOString().slice(0, 10)       //    2022-05-10T08:55:46.266+00:00
-    else return false
+    if (date != "Invalid Date") return date.toISOString().slice(0, 10)      
+        else return false
 }
 
-// const isValidDate = (date) => {    //2022-03-30
-//     let  d = new Date(date);
-//     console.log(date.slice(8,10))
-//     console.log(date.slice(5,7) )
-//     console.log(date.slice(0,4))
-//     if (d.getFullYear() == date.slice(0,4) && d.getMonth() == date.slice(5,7) && d.getDate() == date.slice(8,10)) {
-//         return true;
-//     }
-//     return false;
-// }
+
 
 //#######################################################################################################################################################################
 
@@ -87,7 +78,7 @@ const createBook = async (req, res) => {
 //#######################################################################################################################################################################
 const getBookByQueryParams = async (req, res) => {
     try {
-        const requestBody = req.query;        // {userId,category,subcategory}   {u},{u,c},{u,c,s}
+        const requestBody = req.query;        
         const filterQuery = { isDeleted: false }
 
         if (isValidRequestBody(requestBody)) {
