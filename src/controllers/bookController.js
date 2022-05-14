@@ -59,7 +59,7 @@ const createBook = async (req, res) => {
         if (!isValid(category)) return res.status(400).send({ status: false, message: "Category Should be Valid..." })
 
         if (!subcategory) return res.status(400).send({ status: false, message: "Subcategory is Required ..." })
-        if (Array.isArray(subcategory)) subcategory = subcategory.map(el => el.trim()).filter(el => el)
+        if (Array.isArray(subcategory)) subcategory = subcategory.map(el => el.trim()).filter(el => el)    
         if (Object.prototype.toString.call(subcategory) === "[object String]") subcategory = subcategory.trim()
 
         if (!releasedAt) return res.status(400).send({ status: false, message: "ReleasedAt is Required ..." })
@@ -87,7 +87,7 @@ const getBookByQueryParams = async (req, res) => {
             }
         }
 
-        let bookData = await bookModel.find(filterQuery).sort({ title: 1 })   //.select({ _id: 1, title: 1, excerpt: 1, userId: 1, category: 1, releasedAt: 1, reviews: 1 ,isDeleted:1 })
+        let bookData = await bookModel.find(filterQuery).sort({ title: 1 }).select({ _id: 1, title: 1, excerpt: 1, userId: 1, category: 1, releasedAt: 1, reviews: 1 ,isDeleted:1 })
         if (!bookData) return res.status(404).send({ status: false, msg: "No Book found" })
 
         return res.status(201).send({ status: true, message: "Found successfully", data: bookData })
@@ -161,7 +161,7 @@ const updateBookById = async (req, res) => {
         //releasedAt should be valided here 
 
         const bookToBeUpdated = await bookModel.findById({ _id: bookId, isdeleted: false })
-        if (!bookToBeUpdated) return res.status(404).send({ status: false, massage: "This book does not exist or Maybe Deleted" })
+        if (!bookToBeUpdated) return res.status(404).send({ status: false, message: "This book does not exist or Maybe Deleted" })
 
         const updatedBooks = await bookModel.findOneAndUpdate({ _id: bookId }, { title: title, excerpt: excerpt, ISBN: ISBN, releasedAt: releasedAt }, { new: true })  //releaseAt
         res.status(200).send({ status: true, message: "update successfully", data: updatedBooks })
