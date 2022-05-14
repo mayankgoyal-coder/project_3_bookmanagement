@@ -1,30 +1,10 @@
 const reviewModel = require("../models/reviewModel")
 const bookModel = require("../models/bookModel")
 const mongoose = require("mongoose")
-//###################################################################################################################################################################
-const isValid = function (value) {
-    if (typeof value === "undefined" || typeof value === null) return false
-    if (typeof value === "string" && value.trim().length === 0) return false
-    return true
-}
-
-const isValidRequestBody = function (requestBody) {
-    return Object.keys(requestBody).length != 0
-}
-
-const isValidObjectId = function (Id) {
-    return mongoose.isValidObjectId(Id)          //mongoose.Types.ObjectId.isValid(Id)
-}
-
-const isValidDate = function (a) {
-    let regEx = /^(\d{4})(\/|-)(\d{1,2})(\/|-)(\d{1,2})$/;                     ///^\d{4}-\d{2}-\d{2}$/;
-    if (!a.match(regEx)) return false;
-    let date = new Date(a)
-    if (date != "Invalid Date") return date.toISOString().slice(0, 10)
-    else return false
-}
-
-//########################################################################################################################################################################
+//#######################################################################################################################################################################
+//Here We Requiring All the validation function from util/validations
+const {isValid,isValidRequestBody,isValidObjectId,isValidDate} = require("../utils/validations")
+//#######################################################################################################################################################################
 
 const createReview = async function (req, res) {
     try {
@@ -60,11 +40,7 @@ const createReview = async function (req, res) {
 
     }
 }
-
-
-
-
-
+//########################################################################################################################################################################
 
 const updateReview = async function (req, res) {
     try {
@@ -94,56 +70,33 @@ const updateReview = async function (req, res) {
         const updatedReview = await reviewModel.findOneAndUpdate({ _id: reviewId, bookId: bookId }, { reviewedBy: reviewedBy, review: review, rating: rating }, { new: true })
         res.status(200).send({ status: true, message: "review update successfully", data: updatedReview })
 
-
     } catch (err) {
         return res.status(500).send({ status: false, Error: err.message })
 
     }
 }
+//########################################################################################################################################################################
 
 const deleteReview = async function (req, res) {
-    //nithish
-
     try {
+        const reviewId = req.params.reviewId;
+        const bookId = req.params.bookId;
+        if (!isValidObjectId(bookId)) return res.status(400).send({ status: false, msg: "Enter a Valid BookId" })
+        const book = await bookModel.findOne({ _id: bookId, isDeleted: false })
+        if (!book) return res.status(400).send({ status: false, msg: "This book is already deleted " })
 
-        let review_Id = req.params.reviewId; //input takes from path params 
-
-        if (!mongoose.isValidObjectId(review_Id)) return res.status(400).send({ status: false, msg: "Enter a Valid reviewId" })
-
-        let review = await reviewModel.findById(review_Id)//reviewId check form reviewModel
-
-        if (review.isDeleted == true) return res.status(400).send({ status: false, msg: "this blog is already deleted" })
-
-        let book_Id = req.params.bookId; //input takes from path params 
-
-        if (!mongoose.isValidObjectId(book_Id)) return res.status(400).send({ status: false, msg: "Enter a Valid BookId" })
-
-        let book = await blogModel.findById(blog_Id)//bookId check form reviewModel
-
-        if (book.isDeleted == true) return res.status(400).send({ status: false, msg: "this book is already deleted" })
-
+        if (!isValidObjectId(reviewId)) return res.status(400).send({ status: false, msg: "Enter a Valid reviewId" })
+        const review = await reviewModel.findOne({ _id: reviewId, isDeleted: false })
+        if (!review) return res.status(400).send({ status: false, msg: "this review is already deleted" })
         //--------------------------------------------------Deleted here--------------------------------------------------//
-
-        let deletedreview = await reviewModel.findOneAndUpdate({ _id: review_Id }, { $set: { isDeleted: true, DeletedAt: Date.now() } }, { new: true });
-
-        if (deleteByQuery.modifiedCount == 0) return res.status(400).send({ status: false, msg: "The review is already Deleted" })
-
-        res.status(200).send({ status: true, data: deletedreview });
-
-        let deletedBook = await blogModel.findOneAndUpdate({ _id: blog_Id }, { $set: { isDeleted: true, DeletedAt: Date.now() } }, { new: true });
-
-        if (deleteByQuery.modifiedCount == 0) return res.status(400).send({ status: false, msg: "The Book is already Deleted" })
-
-        res.status(200).send({ status: true, data: deletedBook });
-        //--------------------------------------------------------------
+        const deletedReview = await reviewModel.findOneAndUpdate({ _id: reviewId, bookId: bookId }, { $set: { isDeleted: true, DeletedAt: Date.now() } }, { new: true });
+        await bookModel.findOneAndUpdate({ _id: bookId }, { $inc: { reviews: -1 } })
+        res.status(200).send({ status: true, message: "Review Deleted Successfully", data: deletedReview });
     }
-
     catch (err) {
-
         res.status(500).send({ msg: "error", error: err.message })
-
     }
-
 }
+//########################################################################################################################################################################
 
 module.exports = { createReview, updateReview, deleteReview }

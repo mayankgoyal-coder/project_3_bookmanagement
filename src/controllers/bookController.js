@@ -1,35 +1,10 @@
 const bookModel = require("../models/bookModel")
 const userModel = require("../models/userModel")
 const reviewModel = require("../models/reviewModel")
-const mongoose = require("mongoose")
-const moment = require("moment")
-const { request } = require("express")
 
 //#######################################################################################################################################################################
-const isValid = function (value) {
-    if (typeof value === "undefined" || typeof value === null) return false
-    if (typeof value === "string" && value.trim().length === 0) return false
-    return true
-}
-
-const isValidRequestBody = function (requestBody) {
-    return Object.keys(requestBody).length != 0
-}
-
-const isValidObjectId = function (Id) {
-    return mongoose.isValidObjectId(Id)          //mongoose.Types.ObjectId.isValid(Id)
-}
-
-const isValidDate = function (a) {
-    const regEx = /^(\d{4})(\/|-)(\d{1,2})(\/|-)(\d{1,2})$/;                    
-      if (!a.match(regEx)) return false;
-    let date = new Date(a)
-    if (date != "Invalid Date") return date.toISOString().slice(0, 10)      
-        else return false
-}
-
-
-
+//Here We Requiring All the validation function from util/validations
+const {isValid,isValidRequestBody,isValidObjectId,isValidDate} = require("../utils/validations")
 //#######################################################################################################################################################################
 
 const createBook = async (req, res) => {
@@ -78,7 +53,7 @@ const createBook = async (req, res) => {
 //#######################################################################################################################################################################
 const getBookByQueryParams = async (req, res) => {
     try {
-        const requestBody = req.query;        
+        const requestBody = req.query;   
         const filterQuery = { isDeleted: false }
 
         if (isValidRequestBody(requestBody)) {
