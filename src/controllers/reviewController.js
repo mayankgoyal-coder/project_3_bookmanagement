@@ -1,30 +1,10 @@
 const reviewModel = require("../models/reviewModel")
 const bookModel = require("../models/bookModel")
 const mongoose = require("mongoose")
-//###################################################################################################################################################################
-const isValid = function (value) {
-    if (typeof value === "undefined" || typeof value === null) return false
-    if (typeof value === "string" && value.trim().length === 0) return false
-    return true
-}
-
-const isValidRequestBody = function (requestBody) {
-    return Object.keys(requestBody).length != 0
-}
-
-const isValidObjectId = function (Id) {
-    return mongoose.isValidObjectId(Id)          //mongoose.Types.ObjectId.isValid(Id)
-}
-
-const isValidDate = function (a) {
-    let regEx = /^(\d{4})(\/|-)(\d{1,2})(\/|-)(\d{1,2})$/;                     ///^\d{4}-\d{2}-\d{2}$/;
-    if (!a.match(regEx)) return false;
-    let date = new Date(a)
-    if (date != "Invalid Date") return date.toISOString().slice(0, 10)
-    else return false
-}
-
-//########################################################################################################################################################################
+//#######################################################################################################################################################################
+//Here We Requiring All the validation function from util/validations
+const {isValid,isValidRequestBody,isValidObjectId,isValidDate} = require("../utils/validations")
+//#######################################################################################################################################################################
 
 const createReview = async function (req, res) {
     try {
