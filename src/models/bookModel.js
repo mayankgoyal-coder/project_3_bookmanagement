@@ -8,10 +8,10 @@ const bookSchema = new mongoose.Schema({
     ISBN: { type: String, required: true, unique: true ,trim:true},
     category: { type: String, required: true ,trim:true},
     subcategory: { type: [String], required: true ,trim:true},
-    reviews: { type: Number, default: 0 }, //comment: Holds number of reviews of this book
-    deletedAt: { type: Date }, //, when the document is deleted
+    reviews: { type: Number, default: 0 }, 
+    deletedAt: { type: Date },
     isDeleted: { type: Boolean, default: false },
-    releasedAt: { type: Date, required: true }, // default: () => moment().format('YYYY-MM-DD')
+    releasedAt: { type: Date, required: true },
 
 }, { timestamps: true })
 

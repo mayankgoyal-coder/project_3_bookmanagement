@@ -31,7 +31,7 @@ const isValidDate = function (s) {
 //#############################################################################################################
 //Function to check the title which is enum here
 const isValidTitle = function (value) {
-    return ["Mr", "Mrs", "Miss"].indexOf(value) >= 0
+    return ["Mr", "Mrs", "Miss"].indexOf(value.trim()) >= 0
 }
 //#############################################################################################################
 module.exports={isValid,isValidRequestBody,isValidObjectId,isValidDate,isValidTitle}

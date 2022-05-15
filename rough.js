@@ -39,20 +39,20 @@
 
 // console.log(Math.abs("vhfhg"))
 
-function isValidDate(s) {
-    // Assumes s is "mm/dd/yyyy"
-    if ( ! /^\d\d\d\d\-\d\d\-\d\d$/.test(s) ) {
-        return false;
-    }
-    const parts = s.split('-').map((p) => parseInt(p, 10));
-    parts[1] -= 1;
-    const d = new Date(parts[0], parts[1], parts[2]);
-    return d.getMonth() === parts[1] && d.getDate() === parts[2] && d.getFullYear() === parts[0];
-}
+// function isValidDate(s) {
+//     // Assumes s is "mm/dd/yyyy"
+//     if ( ! /^\d\d\d\d\-\d\d\-\d\d$/.test(s) ) {
+//         return false;
+//     }
+//     const parts = s.split('-').map((p) => parseInt(p, 10));
+//     parts[1] -= 1;
+//     const d = new Date(parts[0], parts[1], parts[2]);
+//     return d.getMonth() === parts[1] && d.getDate() === parts[2] && d.getFullYear() === parts[0];
+// }
 
-function testValidDate(s) {
-    console.log(s, isValidDate(s));
-}
+// function testValidDate(s) {
+//     console.log(s, isValidDate(s));
+// }
 
 
 
@@ -66,7 +66,7 @@ function testValidDate(s) {
 //     }
 //     return false;
 // }
-testValidDate('2022-03-31'); // true
+// testValidDate('2022-03-31'); // true
 // testValidDate('02/30/2020'); // true
 // testValidDate('02/29/2000'); // true
 // testValidDate('02/29/1900'); // false
@@ -80,3 +80,8 @@ testValidDate('2022-03-31'); // true
 // testValidDate(null);         // false
 // testValidDate('');           // false
 
+
+let arr = 25
+// let arr2=arr%2
+// console.log(arr2,arr)
+console.log(arr.toString(2))
