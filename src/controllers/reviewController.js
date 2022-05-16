@@ -31,7 +31,7 @@ const createReview = async function (req, res) {
         requestBodyReview.reviewedAt = new Date()
         const createdReview = await reviewModel.create(requestBodyReview)
         const bookDetail = await bookModel.findOneAndUpdate({ _id: bookIdByParams }, { $inc: { reviews: 1 } }, { new: true }).lean()
-        const allReviews = await reviewModel.find({ id: createdReview._id }).select({ isDeleted: 0, createdAt: 0, updatedAt: 0, _v: 0 })
+        const allReviews = await reviewModel.find({ bookId: createdReview.bookId }).select({ isDeleted: 0, createdAt: 0, updatedAt: 0, _v: 0 })
         bookDetail.reviewedData = allReviews
         return res.status(201).send({ status: true, message: "created successfully", data: bookDetail })
 
@@ -54,6 +54,10 @@ const updateReview = async function (req, res) {
 
         const reviewExist = await reviewModel.findOne({ _id: reviewId, isDeleted: false })
         if (!reviewExist) return res.status(404).send({ status: false, message: "Review Not Found or Maybe Deleted" })
+
+        
+        const bookReview = await reviewModel.findOne({_id: reviewId, bookId: bookId})
+        if(!bookReview) return res.status(400).send({ status: false, message: "This review is not belong to this book,So You cant Update" })
 
         if (!isValidRequestBody(requestedBody)) return res.status(400).send({ status: false, message: "Invalid request parmeters,Please provide something to Update review" })
 

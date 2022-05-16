@@ -12,7 +12,7 @@ const userCreate = async function (req, res) {
 
         let nameRegex = /^[a-zA-Z ]{2,30}$/
         let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
-        let phoneRegex = /^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$/
+        let phoneRegex = /^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/
 
         if (!isValidRequestBody(requestBody)) return res.status(400).send({ status: false, messsage: "Invalid request parmeters,please provide user details" })
 
