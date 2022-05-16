@@ -62,7 +62,7 @@ const getBookByQueryParams = async (req, res) => {
             if (requestBody.subcategory) {filterQuery.subcategory = requestBody.subcategory.split(",").map(el => el.trim())}
         }
 
-        let bookData = await bookModel.find(filterQuery).sort({ title: 1 })   //.select({ _id: 1, title: 1, excerpt: 1, userId: 1, category: 1, releasedAt: 1, reviews: 1 ,isDeleted:1 })
+        let bookData = await bookModel.find(filterQuery).sort({ title: 1 }).select({ _id: 1, title: 1, excerpt: 1, userId: 1, category: 1, releasedAt: 1, reviews: 1 ,isDeleted:1 })
         if (!bookData) return res.status(404).send({ status: false, Message: "No Book found" })
 
         return res.status(201).send({ status: true, Message: "Found successfully", data: bookData })
@@ -80,28 +80,11 @@ const getBookById = async (req, res) => {
         if (!isValidObjectId(bookId)) return res.status(400).send({ status: false, Message: "bookId is not valid" })
         const getBook = await bookModel.findOne({ _id: bookId, isDeleted: false });
         if (!getBook) return res.status(404).send({ status: false, Message: "No Book Found" });
-        let bookDetails = JSON.parse(JSON.stringify(getBook))   // deep cloning
+        let bookDetails = JSON.parse(JSON.stringify(getBook)) 
 
         const reviewdata = await reviewModel.find({ bookId: bookId, isDeleted: false }).select({ isDeleted: 0, createdAt: 0, updatedAt: 0, __v: 0 })
 
         bookDetails.reviewsData = reviewdata
-        // console.log(data)
-
-        // const bookDetails = {
-        //     _id: getBook._id,
-        //     title: getBook.title,
-        //     excerpt: getBook.excerpt,
-        //     userId: getBook.userId,
-        //     category: getBook.category,
-        //     subcategory: getBook.subcategory,
-        //     deleted: getBook.deleted,
-        //     reviews: getBook.reviews,
-        //     deletedAt: getBook.deletedAt,
-        //     releasedAt: getBook.releasedAt,
-        //     createdAt: getBook.createdAt,
-        //     updatedAt: getBook.updatedAt,
-        //     reviewsData: []
-        // }
 
         return res.status(201).send({ status: true, Message: "Success", data: bookDetails })
 
@@ -118,8 +101,6 @@ const updateBookById = async (req, res) => {
         const requestUpdateBody = req.body
         const { title, excerpt, ISBN, releasedAt } = requestUpdateBody
         const ISBNRagex = /^[\d*\-]{10}|[\d*\-]{13}$/
-
-        //  check for other things that comes from requestbody
 
         if (!isValidObjectId(bookId)) return res.status(400).send({ status: false, Message: "bookId is not valid" })
         if (!isValidRequestBody(requestUpdateBody)) return res.status(400).send({ status: false, Message: "Please Provide something to Update" })
