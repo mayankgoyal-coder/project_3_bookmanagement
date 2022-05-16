@@ -31,7 +31,7 @@ const createReview = async function (req, res) {
         requestBodyReview.reviewedAt = new Date()
         const createdReview = await reviewModel.create(requestBodyReview)
         const bookDetail = await bookModel.findOneAndUpdate({ _id: bookIdByParams }, { $inc: { reviews: 1 } }, { new: true }).lean()
-        const allReviews = await reviewModel.find({ id: createdReview._id }).select({ isDeleted: 0, createdAt: 0, updatedAt: 0, _v: 0 })
+        const allReviews = await reviewModel.find({ _id: createdReview._id }).select({ isDeleted: 0, createdAt: 0, updatedAt: 0, _v: 0 })
         bookDetail.reviewedData = allReviews
         return res.status(201).send({ status: true, Message: "created successfully", data: bookDetail })
 
