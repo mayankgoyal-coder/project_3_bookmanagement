@@ -49,9 +49,11 @@ const updateReview = async function (req, res) {
         const requestedBody = req.body
         const { reviewedBy, review, rating } = requestedBody
 
+        if (!isValidObjectId(bookId)) return res.status(400).send({ status: false, message: "Enter a Valid BookId" })
         const bookExist = await bookModel.findOne({ _id: bookId, isDeleted: false })
         if (!bookExist) return res.status(404).send({ status: false, message: "Book Not Found or Maybe Deleted" })
 
+        if (!isValidObjectId(reviewId)) return res.status(400).send({ status: false, message: "Enter a Valid reviewId" })
         const reviewExist = await reviewModel.findOne({ _id: reviewId, isDeleted: false })
         if (!reviewExist) return res.status(404).send({ status: false, message: "Review Not Found or Maybe Deleted" })
 
