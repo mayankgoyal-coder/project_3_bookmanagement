@@ -26,12 +26,12 @@ const createReview = async function (req, res) {
 
         if (rating)
             if (!/\d/.test(rating)) return res.status(400).send({ status: false, message: "rating  should be number ..." })
-        if (rating > 5 || rating < 1 || typeof rating != "number") return res.status(400).send({ status: false, message: "rating range should be 1-5 ..." })
+        if (rating > 5 || rating < 1 || typeof rating != "number")  return res.status(400).send({ status: false, message: "rating range should be 1-5 ..." })
 
         requestBodyReview.reviewedAt = new Date()
         const createdReview = await reviewModel.create(requestBodyReview)
         const bookDetail = await bookModel.findOneAndUpdate({ _id: bookIdByParams }, { $inc: { reviews: 1 } }, { new: true }).lean()
-        const allReviews = await reviewModel.find({ id: createdReview._id }).select({ isDeleted: 0, createdAt: 0, updatedAt: 0, _v: 0 })
+        const allReviews = await reviewModel.find({ _id: createdReview._id }).select({ isDeleted: 0, createdAt: 0, updatedAt: 0, _v: 0 })
         bookDetail.reviewdData = allReviews
         return res.status(201).send({ status: true, message: "created successfully", data: bookDetail })
 
