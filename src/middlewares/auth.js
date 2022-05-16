@@ -26,13 +26,13 @@ const authorization = async function (req, res, next) {
         if (bookId) {
             if(! isValidObjectId(bookId)) return res.status(400).send({status:false,message:"Invalid Book ID A1"})
             const bookDetails = await bookModel.findOne({ _id: bookId })
-            if (!bookDetails) return res.status(400).send({ status: false, message: "Book not Found A1" })
+            if (!bookDetails) return res.status(404).send({ status: false, message: "Book not Found A1" })
             const incomingUserId = bookDetails.userId
             if (incomingUserId.toString() !== decodedUserId) return res.status(403).send({ status: false, message: "You Are Not Authorized" })        
         }
         if (userId) {
             if(! isValidObjectId(userId)) return res.status(400).send({status:false,message:"Invalid User ID A1"})
-            if(! await userModel.findOne({_id:userId})) return res.status(400).send({status:false,message:"User Not Found A1"})
+            if(! await userModel.findOne({_id:userId})) return res.status(404).send({status:false,message:"User Not Found A1"})
             if (userId !== decodedUserId) return res.status(403).send({ status: false, message: "You Are Not Authorized" })
         }
         next()

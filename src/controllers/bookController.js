@@ -18,7 +18,7 @@ const createBook = async (req, res) => {
         if (!userId) return res.status(400).send({ status: false, message: "UserId is Required ..." })
         if (!isValid(userId)) return res.status(400).send({ status: false, message: "UserId Should be Valid..." })
         if (!isValidObjectId(userId)) return res.status(400).send({ status: false, message: "UserId is not valid ObjectId" })
-        if (!(await userModel.findOne({ _id: userId }))) return res.status(400).send({ status: false, message: "User not Registered yet" })
+        if (!(await userModel.findOne({ _id: userId }))) return res.status(404).send({ status: false, message: "User not Registered yet" })
 
         if (!title) return res.status(400).send({ status: false, message: "Title is Required ..." })
         if (!isValid(title)) return res.status(400).send({ status: false, message: "Title Should be Valid..." })

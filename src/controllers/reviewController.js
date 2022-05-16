@@ -89,11 +89,11 @@ const deleteReview = async function (req, res) {
         const bookId = req.params.bookId;
         if (!isValidObjectId(bookId)) return res.status(400).send({ status: false, message: "Enter a Valid BookId" })
         const book = await bookModel.findOne({ _id: bookId, isDeleted: false })
-        if (!book) return res.status(400).send({ status: false, message: "This book is already deleted " })
+        if (!book) return res.status(404).send({ status: false, message: "This book is already deleted or Not Found" })
 
         if (!isValidObjectId(reviewId)) return res.status(400).send({ status: false, message: "Enter a Valid reviewId" })
         const review = await reviewModel.findOne({ _id: reviewId, isDeleted: false })
-        if (!review) return res.status(400).send({ status: false, message: "this review is already deleted" })
+        if (!review) return res.status(404).send({ status: false, message: "this review is already deleted or Not Found" })
 
         //--------------------------------------------------Deleted here--------------------------------------------------//
 
