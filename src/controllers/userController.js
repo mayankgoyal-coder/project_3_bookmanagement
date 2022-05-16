@@ -12,7 +12,7 @@ const userCreate = async function (req, res) {
 
         let nameRegex = /^[a-zA-Z ]{2,30}$/
         let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
-        let phoneRegex = /^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$/
+        let phoneRegex = /^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/
 
         if (!isValidRequestBody(requestBody)) return res.status(400).send({ status: false, messsage: "Invalid request parmeters,please provide user details" })
 
@@ -23,16 +23,16 @@ const userCreate = async function (req, res) {
         if (!isValid(name)) return res.status(400).send({ status: false, message: "Name Should be valid ..." })
         if (!name.match(nameRegex)) return res.status(400).send({ status: false, message: "Name Should not contain Number and length between 2-30 " })
 
-        if (!phone) return res.status(400).send({ status: false, Message: "Phone Number is Required ..." })
-        if (!phone.trim().match(phoneRegex)) return res.status(400).send({ status: false, Message: `${phone} Please enter valid Phone....` })
-        if (await userModel.findOne({ phone: phone })) return res.status(400).send({ status: false, Message: ` Please enter Unique Phone number....` })
+        if (!phone) return res.status(400).send({ status: false, message: "Phone Number is Required ..." })
+        if (!phone.trim().match(phoneRegex)) return res.status(400).send({ status: false, message: `${phone} Please enter valid Phone....` })
+        if (await userModel.findOne({ phone: phone })) return res.status(400).send({ status: false, message: ` Please enter Unique Phone number....` })
 
-        if (!email) return res.status(400).send({ status: false, Message: "Email Id is Required ...." })
-        if (!email.trim().match(emailRegex)) return res.status(400).send({ status: false, Message: `${email} Please enter valid Email Id...` })
-        if (await userModel.findOne({ email: email })) return res.status(400).send({ status: false, Message: `Please enter unique Email Id....` })
+        if (!email) return res.status(400).send({ status: false, message: "Email Id is Required ...." })
+        if (!email.trim().match(emailRegex)) return res.status(400).send({ status: false, message: `${email} Please enter valid Email Id...` })
+        if (await userModel.findOne({ email: email })) return res.status(400).send({ status: false, message: `Please enter unique Email Id....` })
 
-        if (!password) return res.status(400).send({ status: false, Message: " Password is Required ...." })
-        if (password.length < 8 || password.length > 15) return res.status(400).send({ status: false, Message: " Password Length Should be Between 8 and 15 ..." })
+        if (!password) return res.status(400).send({ status: false, message: " Password is Required ...." })
+        if (password.length < 8 || password.length > 15) return res.status(400).send({ status: false, message: " Password Length Should be Between 8 and 15 ..." })
 
         if (address) {
             const { street, city, pincode } = address
