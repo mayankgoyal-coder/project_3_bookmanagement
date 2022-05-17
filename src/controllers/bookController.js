@@ -86,7 +86,7 @@ const getBookById = async (req, res) => {
 
         bookDetails.reviewsData = reviewdata
 
-        return res.status(201).send({ status: true, message: "Success", data: bookDetails })
+        return res.status(200).send({ status: true, message: "Success", data: bookDetails })
 
     } catch (err) {
         res.status(500).send({ status: false, Error: err.message })
