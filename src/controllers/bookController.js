@@ -1,6 +1,8 @@
 const bookModel = require("../models/bookModel")
 const userModel = require("../models/userModel")
 const reviewModel = require("../models/reviewModel")
+const aws=require("../aws-js/aws-connect")
+
 
 //#######################################################################################################################################################################
 //Here We Requiring All the validation function from util/validations
@@ -14,6 +16,18 @@ const createBook = async (req, res) => {
         const ISBNRagex = /^[\d*\-]{10}|[\d*\-]{13}$/
 
         if (!isValidRequestBody(requestBody)) return res.status(400).send({ status: false, message: "Invalid request parmeters,Please provide Book details" })
+
+        let files= req.files
+        if(files && files.length>0){
+            //upload to s3 and get the uploaded link
+            // res.send the link back to frontend/postman
+            let uploadedFileURL= await aws.uploadFile( files[0] )
+            requestBody.bookCover=uploadedFileURL
+            // res.status(201).send({msg: "file uploaded succesfully", data: uploadedFileURL})
+        }
+        else{
+            res.status(400).send({ msg: "No file found" })
+        }
 
         if (!userId) return res.status(400).send({ status: false, message: "UserId is Required ..." })
         if (!isValid(userId)) return res.status(400).send({ status: false, message: "UserId Should be Valid..." })
@@ -150,7 +164,10 @@ const deleteById = async (req, res) => {
     }
 }
 
-//#######################################################################################################################################################################
+//###########################################################################################################################################################################
+
+
+
 
 
 module.exports = { createBook, getBookByQueryParams, getBookById, updateBookById, deleteById }
